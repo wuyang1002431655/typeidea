@@ -4,49 +4,51 @@ from django.utils.html import format_html
 from .models import Post, Category, Tag
 from .adminforms import PostAdminForm
 from typeidea.custom_site import custom_site
+from typeidea.base_admin import BaseOwnerAdmin
 
 
 class PostInline(admin.TabularInline):
+    # 也可选择继承自admin.StackedInline以获取不同的展示样式
     fields = ('title', 'desc')
     extra = 1  # 控制额外多几个
     model = Post
 
 
 @admin.register(Category, site=custom_site)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(BaseOwnerAdmin):
     inlines = [PostInline, ]
     list_display = ('name', 'status', 'is_nav', 'created_time', 'post_count')
     fields = ('name', 'status', 'is_nav')
-
-    def save_model(self, request, obj, form, change):
-        obj.owner = request.user
-        return super(CategoryAdmin, self).save_model(request, obj, form, change)
+    # def save_model(self, request, obj, form, change):
+    #     obj.owner = request.user
+    #     return super(CategoryAdmin, self).save_model(request, obj, form, change)
 
     def post_count(self, obj):
         return obj.post_set.count()
 
     post_count.short_description = '文章数量'
 
-    def __str__(self):
-        return self.name
+    # def __str__(self):
+    #     return self.name
 
 
 @admin.register(Tag, site=custom_site)
-class TagAdmin(admin.ModelAdmin):
+class TagAdmin(BaseOwnerAdmin):
     list_display = ('name', 'status', 'created_time')
     fields = ('name', 'status')
 
-    def save_model(self, request, obj, form, change):
-        obj.owner = request.user
-        return super(TagAdmin, self).save_model(request, obj, form, change)
-
-    def __str__(self):
-        return self.name
+    # def save_model(self, request, obj, form, change):
+    #     obj.owner = request.user
+    #     return super(TagAdmin, self).save_model(request, obj, form, change)
+    #
+    # def __str__(self):
+    #     return self.name
 
 
 class CategoryOwnerFilter(admin.SimpleListFilter):
     # 通过集成Django admin提供的SimpleListFilter类实现自定义过滤器，然后把自定义过滤器配置到ModelAdmin
     # SimpleListFilter提供两个属性和两个方法供复习
+    # 自定义过滤器只展示当前用户分类
     title = '分类过滤器'  # 展示标题
     parameter_name = 'owner_category'  # 查询时URL参数的名字
 
@@ -63,15 +65,16 @@ class CategoryOwnerFilter(admin.SimpleListFilter):
 
 
 @admin.register(Post, site=custom_site)
-class PostAdmin(admin.ModelAdmin):
-    list_display = ['title', 'category', 'status', 'created_time', 'operator']
+class PostAdmin(BaseOwnerAdmin):
+    form = PostAdminForm
+    list_display = ['title', 'category', 'status', 'created_time', 'owner', 'operator']
     list_display_links = []
-    list_filter = [CategoryOwnerFilter]
-    search_fields = ['title', 'category_name']
+    list_filter = [CategoryOwnerFilter, ]
+    search_fields = ['title', 'category__name']
     actions_on_top = True
     actions_on_bottom = True
     save_on_top = True
-    form = PostAdminForm
+    exclude = ['owner',]
     # fields = (
     #     ('catrgory', 'title'),
     #     'desc',
@@ -94,7 +97,7 @@ class PostAdmin(admin.ModelAdmin):
             ),
         }),
         ('额外信息', {
-            'classes': ('collapse',),
+            'classes': ('wide',),
             'fields': ('tag',),
         })
     )
@@ -107,9 +110,8 @@ class PostAdmin(admin.ModelAdmin):
     # 也就是说第一个元素是string，第二个元素是dict，而dict的key可以是fields，description，classes
     # fields的效果是控制展示哪些元素，也可以给元素排序并组合元素位置
     # classes是给要配置的板块加上CSS属性，Django admin默认支持collapse和wide
-    # filter_horizontal = ('tags',)#设置哪些字段横向展示
-    # filter_vertical = ('tags',)#设置哪些字段纵向展示
-    exclude = ('owner',)
+    # filter_horizontal = ('tag',)#设置哪些字段横向展示
+    filter_vertical = ('tag',)  # 设置哪些字段纵向展示
 
     def operator(self, obj):
         return format_html(
@@ -119,16 +121,16 @@ class PostAdmin(admin.ModelAdmin):
 
     operator.short_description = '操作'
 
-    def save_model(self, request, obj, form, change):
-        obj.owner = request.user
-        return super(PostAdmin, self).save_model(request, obj, form, change)
-
-    def get_queryset(self, request):
-        qs = super(PostAdmin, self).get_queryset(request)
-        return qs.filter(owner=request.user)
-
-    def __str__(self):
-        return self.name
+    # def save_model(self, request, obj, form, change):
+    #     obj.owner = request.user
+    #     return super(PostAdmin, self).save_model(request, obj, form, change)
+    #
+    # def get_queryset(self, request):
+    #     qs = super(PostAdmin, self).get_queryset(request)
+    #     return qs.filter(owner=request.user)
+    #
+    # def __str__(self):
+    #     return self.name
 
     # class Media:
     #     css={
