@@ -1,0 +1,15 @@
+/venv
+.idea/
+typeidea/blog/__pycache__/
+typeidea/blog/migrations/0001_initial.py
+typeidea/blog/migrations/__pycache__/
+typeidea/comment/__pycache__/
+typeidea/comment/migrations/0001_initial.py
+typeidea/comment/migrations/__pycache__/
+typeidea/config/__pycache__/
+typeidea/config/migrations/0001_initial.py
+typeidea/config/migrations/__pycache__/
+typeidea/typeidea/__pycache__/
+typeidea/typeidea/db.sqlite3
+typeidea/typeidea/settings/__pycache__/
+
