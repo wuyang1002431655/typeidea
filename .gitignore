@@ -12,4 +12,5 @@ typeidea/config/migrations/__pycache__/
 typeidea/typeidea/__pycache__/
 typeidea/typeidea/db.sqlite3
 typeidea/typeidea/settings/__pycache__/
+typeidea/blog/migrations/0002_auto_20200215_1442.py
 
